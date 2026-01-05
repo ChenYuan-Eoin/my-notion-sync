@@ -35,5 +35,16 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add calendar.ics
-          git commit -m "Update calendar" || exit 0
-          git push
+          
+          # 检查是否有内容变化，没变化就直接跳过
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "没有日程变动，跳过提交。"
+            exit 0
+          fi
+          
+          git commit -m "Update calendar"
+          
+          # 【核心修复】在推送到云端前，先拉取并重新基准化，解决冲突
+          git pull --rebase origin main
+          
+          git push origin main
